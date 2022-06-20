@@ -468,7 +468,6 @@ def analyze_errors_idx(all_df, error_df, idx):
     node_sketch(student_data.true_class,
                 student_data.pred_label, 
                 student_data.kmeans_label, axs[0])
-    #Show the confidence. Make a diagram.
     
     #Sketch a graph of the errors values compared to the the mean value of each class.
     rel_cols = ['num_ops', 'alg_exp', 'expn', 'linear', 
@@ -546,31 +545,48 @@ class predict_confidence_intervals(BaseEstimator, TransformerMixin):
         
         returns: DataFrame of confidence interval information as stated above.
         '''
+
+        #Gather the model predictions.
         predicted_label = self.main_model.predict(X)
         predicted_probabilities = self.main_model.predict_proba(X)
+
+        #Finding the index and values of the maximum predicted probability.
         predicted_label_idxs = predicted_probabilities.argmax(axis = 1)
         predicted_label_prob = predicted_probabilities.max(axis = 1)
+
+        #Saving the results of each of the n_bootstraps models.
         boot_strapped_predictions = np.zeros((self.num_bootstraps, len(X), 3))
         boot_max_class_predictions = np.zeros((self.num_bootstraps, len(X)))
         
         for i in range(self.num_bootstraps):
             probabilities = self.bootstrapped_models[i].predict_proba(X)
             boot_strapped_predictions[i] = probabilities
+            #Saving the predicted probabilities of the predicte class of each sample for each bootstrapped model.
             boot_max_class_predictions[i]= probabilities[np.arange(0, len(X)), predicted_label_idxs]
         
         quant = c_i/100
+
+        #Gathering the confidence intervals for each class for each sample.
         lower_bound_all_class = np.quantile(boot_strapped_predictions, ((1-quant)/2), axis = 0)
         upper_bound_all_class = np.quantile(boot_strapped_predictions, ((1-quant)/2)+quant, axis = 0)
         confidence_intervals_all_class = np.array((lower_bound_all_class,upper_bound_all_class)).T
+
+        #Gathering the confidence intervals for only the predicted class for each sample.
         lower_bound_max_class = np.quantile(boot_max_class_predictions, ((1-quant)/2), axis = 0)
         upper_bound_max_class = np.quantile(boot_max_class_predictions, ((1-quant)/2)+quant, axis = 0)
         confidence_intervals_max_class = np.array((lower_bound_max_class,upper_bound_max_class)).T
        
+        #Finding the index of the models that brought the lower confidence probability.
         lower_conf_max_label_idxs = self.find_nearest_idx(boot_max_class_predictions,
                                                          lower_bound_max_class)
+
+        #Finding the label with the maximum probability when the predicted class had its lower confidence probability.
         lower_conf_label = boot_strapped_predictions[lower_conf_max_label_idxs, 
                                                      np.arange(boot_strapped_predictions.shape[1]), :].argmax(axis = 1)
         lower_conf_named_label = self.main_model.classes_[lower_conf_label.reshape(len(X), 1)]
+
+        #Creating a DataFrame the provides for each sample the predicted probability, probability confidence intervals, 
+        #and labels of predicted and lower confidence probabilities.
         confidence_int_df = pd.DataFrame({'pred_prob':predicted_label_prob,
                                          'lower_ci_val':confidence_intervals_max_class[:, 0],
                                           'upper_ci_val': confidence_intervals_max_class[:, 1],

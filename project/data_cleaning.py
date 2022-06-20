@@ -24,7 +24,7 @@ def label_class(row):
 
     row: A row from the ib_results DataFrame.
 
-    returns: True class label. Could be either Math HL, Math SL, or Math Studies.
+    returns: True class label. Could be either Math AA HL, Math AA SL, or Math AI SL.
     '''
     if row.Level == 'HL':
         if int(row.Grade) >=5:
