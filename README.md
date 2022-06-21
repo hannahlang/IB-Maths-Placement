@@ -1,5 +1,7 @@
 # IB-Math-Placement Classifier
 
+<i> Info on the IB (International Baccalaureate) Diploma Programme. </i>
+https://www.ibo.org/
 ## Project Goals
 
 1. Create a classifier that receives student placement test data (pre-requisite skills), and outputs a prediction for the appropriate IB math course.
@@ -17,11 +19,15 @@
 - Csv files of IB and math placement results from 2019-2021. 
 - All personal identifiers have been masked. 
 - Only Math test scores are visible in the IB results, again, not associated with student names.
+
 2. <b>'project' folder </b>
 - *math_placement_project.ipynb*: Notebook for data cleaning, EDA, model selection, model analysis.
 - *data_cleaning.py*: File of data cleaning functions.
 - *eda_functions.py*: File of EDA functions.
 - *model_evaluation.py*: File of model evaluation functions.
+- *confidence_interval_widget.png*: Image of sample output of confidence interval widget.
+- *individual_errors_widget.png*: Image of sample output of individual errors widget.
+
 3. <b>'ready_model' folder </b> (Contains a usuable model)
 - *math_placement_model.ipynb*: Notebook that runs the model on data, outputs predictions, and letters to students. The notebook allows for re-training of the model with additional data.
 - *math_placement_model.py*: File containing functions to run the model.
