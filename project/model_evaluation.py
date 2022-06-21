@@ -25,7 +25,7 @@ from sklearn.base import TransformerMixin
 from sklearn.base import clone
 from sklearn.calibration import CalibratedClassifierCV
 
-def cross_validate_model(model, X, y, scorer = 'f1_weighted', k = 5, plot = True, verbose = True):
+def cross_validate_model(model, X, y, scorer = 'f1_weighted', k = 5, plot = True, verbose = True, std = False):
     '''
     A function that plots the learning curve of the model and calculates the cross validation 
     scores for the train and test set.
@@ -42,7 +42,9 @@ def cross_validate_model(model, X, y, scorer = 'f1_weighted', k = 5, plot = True
     
     plot: Default is True. If set to true, the function plots the learning curve.
     
-    verbose: Default is True. If set to true, it outpluts the average train and validation scores.
+    verbose: Default is True. If set to true, it outputs the average train and validation scores.
+    
+    std: Default is False. If set to true, it will output the standard deviation of cross-validation scores.
     
     returns: The average train and validation scores.
     '''
@@ -68,8 +70,12 @@ def cross_validate_model(model, X, y, scorer = 'f1_weighted', k = 5, plot = True
         axs.tick_params(rotation = 0)
         axs.set_facecolor('whitesmoke')
         plt.show()
-    return cross_val_dict['train_score'].mean(), cross_val_dict['test_score'].mean()
+    if std:
+        return cross_val_dict['train_score'].mean(),cross_val_dict['test_score'].mean(), cross_val_dict['train_score'].std(), cross_val_dict['test_score'].std()
+    else:
+        return cross_val_dict['train_score'].mean(), cross_val_dict['test_score'].mean()
 
+    
 def grid_search_lr(X_train, y_train, c_list, solver_list, plot = False, verbose = True):
     '''
     A function that runs a grid search specifically on a random forest model with the above hyperparameters.
@@ -117,6 +123,7 @@ def grid_search_lr(X_train, y_train, c_list, solver_list, plot = False, verbose 
                                'train_mean': train_mean_lst, 'val_mean': val_mean_lst})
     results_df['overfit'] = results_df['train_mean'] - results_df['val_mean']
     return results_df
+
 
 def grid_search_rf(X_train, y_train, min_samples_split, min_samples_leaf, criterion, max_features, plot = False, verbose = True):
     '''
@@ -180,6 +187,7 @@ def grid_search_rf(X_train, y_train, min_samples_split, min_samples_leaf, criter
     results_df['overfit'] = results_df['train_mean'] - results_df['val_mean']
     return results_df
 
+
 def feature_importance(model, model_type):
     '''
     A function that plots the features in descending order with their feature importance. If the model is
@@ -215,6 +223,7 @@ def feature_importance(model, model_type):
         plt.show()
         plt.tight_layout()
 
+        
 def create_error_df(all_df, X, y_true, y_pred, model_type = 'classification', model = None):
     '''
     A function that creates a DataFrame of the errors of the model. The DataFrame contains columns of student name, skill scores, graduation year, true_class, Grade, cluster labels, predicted labels, and predicted probabilities.
@@ -245,6 +254,7 @@ def create_error_df(all_df, X, y_true, y_pred, model_type = 'classification', mo
         errors['pred_prob'] = model.predict_proba(X.loc[data_idxs]).max(axis = 1)
         return errors.sort_values(by = 'pred_prob', ascending = False)
 
+    
 def create_confusion_matrix(y_true, y_pred, axis):
     '''
     A function that takes the true and predicted labels and outputs a confusion matrix.
@@ -262,6 +272,7 @@ def create_confusion_matrix(y_true, y_pred, axis):
     disp.plot(xticks_rotation='vertical',cmap='Purples', ax = axs[axis])
     axs[axis].set_xticks(rotation = 45)
 
+    
 def analyze_errors_by_class(all_df, errors_df, X_train, y_true, y_pred, which_class = None):
     '''A function that outputs a confusion matrix of a given model and graphs the average class scores compared to the average scores of the errors within each class.
     
@@ -337,6 +348,7 @@ def analyze_errors_by_class(all_df, errors_df, X_train, y_true, y_pred, which_cl
     plt.tight_layout()
     plt.show()
     
+    
 def node_sketch(y_true, y_pred, cluster, axs):
     '''
     A function that plots a diagram of the true, predicted, and cluster labels.
@@ -397,8 +409,6 @@ def node_sketch(y_true, y_pred, cluster, axs):
     for i in To:
         Labels[i]=i
 
-
-    # Build your graph. Note that we use the DiGraph function to create the graph! This adds arrows
     G=nx.from_pandas_edgelist(df, 'from', 'to', create_using=nx.DiGraph(ax = axs) )
 
     # Define the colormap and set nodes to circles, but the last one to a triangle
@@ -408,7 +418,6 @@ def node_sketch(y_true, y_pred, cluster, axs):
         Circles.append(n)
         Colors_Circles.append(NodeColors[n])
 
-    # By making a white node that is larger, I can make the arrow "start" beyond the node
     nodes = nx.draw_networkx_nodes(G, pos, 
                            nodelist = Circles,
                            node_size=3e3,
@@ -436,6 +445,7 @@ def node_sketch(y_true, y_pred, cluster, axs):
     axs.set_facecolor('Lavender')
     axs.set_title('Predictions')
 
+    
 def analyze_errors_idx(all_df, error_df, idx):
     '''
     A function that outputs the following:
