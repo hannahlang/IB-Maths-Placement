@@ -137,8 +137,7 @@ class prepare_clean_df(BaseEstimator, TransformerMixin):
         returns: A 'clean' dataframe that calculates weighted averages for each skill and calculates a total weighted average for the placement test. It drops columns such as 'Student' and 'Currently in. It also calculates an average score by level.'    
         '''
         question_cols = year_df.drop(['Currently in'], axis = 1).columns
-        df_clean = pd.DataFrame(year_df.apply(self.create_total_perc, axis = 1, args = (question_cols,)),
-                                index = year_df.index, columns = ['total_weighted_perc'])
+        df_clean = pd.DataFrame(year_df.apply(self.create_total_perc, axis = 1, args = (question_cols,)),index = year_df.index, columns = ['total_weighted_perc'])
         for skill in self.skills:
             col_list= self.create_col_list(skill, year_df)
             df_clean[skill] = year_df.apply(self.create_weighted_skill, 
@@ -146,6 +145,7 @@ class prepare_clean_df(BaseEstimator, TransformerMixin):
                                             args = (col_list,))
         for level in [1, 2, 3]:
             df_clean['level_' + str(level) + '_avg'] = year_df.apply(self.average_by_level, args = (question_cols, level, ), axis = 1)
+        df_clean.drop('total_weighted_perc', axis = 1, inplace = True)
         return df_clean
     
     
@@ -555,8 +555,7 @@ Sincerely,\n\n\
 After taking the mathematics placement exam, you have tested into {}, instead of {}. \
 While this is our current recommendation, this is a significant change. \
 The only alternative to {} for you, is a conditional placement in {}. \
-This means that by the start of the Sukkot Holidays, you will need to have a 55% average in \
-assessments in {} to stay in the course. \n\n\
+This means that by the start of the fall holidays, you will need to have a [PERCENTAGE]% average in assessments in {} to stay in the course. \n\n\
 Please email [IB COORDINATOR] at [EMAIL] (cc: [MATH COORDINATOR EMAIL]) \
 to let her know whether you plan to take the recommendation of {} \
 or whether you plan to try the conditional placement in {} until the holidays.\n\n\
